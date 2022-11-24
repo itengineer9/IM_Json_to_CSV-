@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:email="http://www.mulesoft.org/schema/mule/email"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd">
+
+	<flow name="json_to_csv" doc:id="eecd7b40-3b4c-4afd-ac3c-6c794261cc43" >
+		<ee:transform doc:name="json to csv" doc:id="75fef6a9-d2bf-488f-b940-877d93a20b5e" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/csv
+import * from dw::core::Strings
+---
+{
+	Name: payload.Name,
+	Anrede: payload.Anrede,
+	AngelegtAm: payload.AngelegtAm as String {format: "d.m.Y H:i:s"},
+	GeaendertAm: payload.GeaendertAm as String {format: "d.m.Y H:i:s"},
+	Strasse: 'payload.Straße' as String,
+	Postleitzahl: payload.Postleitzahl,
+	Ort: payload.Ort,
+	Land: payload.Land,
+	GeborenAm: payload.GeborenAm as String {format: "d.m.Y"},
+	Zuzahlungsbefreiung: if(payload.Zuzahlungsbefreiung == true) 1 else 0,
+	Patientenerklaerung: if(payload.Patientenerklaerung == true) 1 else 0
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<file:write doc:name="Write to csv file" doc:id="0314b9ba-a743-4ece-952e-0a2c12ae5378" config-ref="File_Config" path="C:\Users\Administrator\OneDrive\Dokumente\candidate_task\kunde1.csv">
+		</file:write>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="bc45e299-9d5b-4e66-953f-dc2079f6ba03" >
+				<email:send doc:name="Send Error Email" doc:id="723d9cd9-8d39-40ec-a5a7-fc7d799aaf31" config-ref="Email_SMTP" fromAddress="arbeitgml@gmail.com" subject="Reading JSON file ERROR">
+					<email:to-addresses >
+						<email:to-address value="arbeitgml@gmail.com" />
+					</email:to-addresses>
+					<email:body >
+						<email:content ><![CDATA[#[ErrorMesage : "Error happens by reading JSON file with attached Payload : "]]]></email:content>
+					</email:body>
+					<email:attachments ><![CDATA[#[{
+	"payload.csv": payload
+}]]]></email:attachments>
+				</email:send>
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+</mule>

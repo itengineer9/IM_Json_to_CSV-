@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:email="http://www.mulesoft.org/schema/mule/email"
+	xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:api-gateway="http://www.mulesoft.org/schema/mule/api-gateway"
+	xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:wsc="http://www.mulesoft.org/schema/mule/wsc" xmlns:accounts-api="http://www.mulesoft.org/schema/mule/accounts-api" xmlns:american-flights-api="http://www.mulesoft.org/schema/mule/american-flights-api" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd 
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd 
+http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/american-flights-api http://www.mulesoft.org/schema/mule/american-flights-api/current/mule-american-flights-api.xsd
+http://www.mulesoft.org/schema/mule/accounts-api http://www.mulesoft.org/schema/mule/accounts-api/current/mule-accounts-api.xsd
+http://www.mulesoft.org/schema/mule/wsc http://www.mulesoft.org/schema/mule/wsc/current/mule-wsc.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd
+http://www.mulesoft.org/schema/mule/api-gateway http://www.mulesoft.org/schema/mule/api-gateway/current/mule-api-gateway.xsd">
+	
+	<file:config name="File_Config" doc:name="File Config" doc:id="c3b6971e-55f9-4e61-97c0-822d93e650e9" />
+		
+	<email:smtp-config name="Email_SMTP" doc:name="Email SMTP" doc:id="5fa7fbac-6ce1-40f1-9856-4d4cc7042ffa" >
+		<email:smtp-connection host="smtp.gmail.com" port="587" user="arbeitgml@gmail.com" password="Rty6gh7j8k" >
+			<email:properties >
+				<email:property key="mail.smtp.starttls.enable" value="true" />
+
+			</email:properties>
+		</email:smtp-connection>
+	</email:smtp-config>
+	
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="b4a093ef-ed39-4d6e-8a2a-2b4329600e3e" >
+		<http:listener-connection host="0.0.0.0" port="${http.port}" />
+	</http:listener-config>
+	
+	<configuration-properties 
+		doc:name="Configuration properties" 
+		doc:id="3d70f95c-c97e-4e0c-b8aa-96b12922aab2" 
+		file="config.yaml" />
+		
+	<configuration 
+		doc:name="Configuration" 
+		doc:id="1b8e1c0f-a092-4225-af8f-b23ff528d85c" 
+		defaultErrorHandler-ref="globalError_Handler" />
+	<configuration-properties doc:name="Configuration properties" doc:id="986be8d0-0243-4c35-af86-8450ee6278a4" file="config${mule.env}.yaml" />
+	<global-property doc:name="Global Property" doc:id="cd49c382-683e-4e50-baca-67e0560b465e" name="mule.env" value="DEV" />
+	<!-- db:config name="Database_Config_PRD" doc:name="Database Config" doc:id="9ccacdc4-4f2e-447f-ab1b-0e3695017d46" >
+		<db:mssql-connection host="eaidemodb.database.windows.net" port="1433" user="itumatestcaseuser" password=" 9RiYuJ7L7HqU]{nT" databaseName="itumatestcase" />
+	</db:config -->
+	<api-gateway:autodiscovery apiId="183246" ignoreBasePath="true" doc:name="API Autodiscovery" doc:id="9139f122-aa61-4ed7-851a-2916dd9b3118" flowRef="jsontocsv-main" />
+	<error-handler name="globalError_Handler" doc:id="6b592015-c13d-4c07-9acd-d86ad678bab3" >
+		
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="88009e2f-39c1-452e-a451-b1493272f2bc" type="ANY">
+			<ee:transform doc:name="Error Message" doc:id="99f88ec0-c505-44fd-82b1-859ed5839544" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	Global_Error: "Global error .. contact the Admin.."
+}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+
+		</on-error-propagate>
+		
+	</error-handler>
+</mule>

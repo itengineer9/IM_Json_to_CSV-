@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
+	<munit:config name="Implementation -suite.xml" />
+	<munit:test name="Sucess-scenario-test" doc:id="a859a5b7-e2a3-4bb9-b90d-9fca495967f3" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock Write to csv file" doc:id="ed9c936b-8c60-494e-b49f-ffde3c4d3d6e" processor="file:write">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="0314b9ba-a743-4ece-952e-0a2c12ae5378" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[output application/csv  --- readUrl('classpath://jsontocsvtest\mock_payload.dwl')]" mediaType="application/csv " encoding="UTF-8" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:spy doc:name="Spy json to csv" doc:id="c4f972e1-f420-431d-b54b-5ad9641626dd" processor="ee:transform">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="ef3718b8-0606-4818-b320-52a43961594a" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:before-call >
+					<munit-tools:assert doc:name="Assert payload" doc:id="f841a016-0012-41fd-97bf-72774a135f17" message="The payload does not match">
+						<munit-tools:that ><![CDATA[#[%dw 2.0
+import jsontocsvtest::spy_assert_payload
+---
+spy_assert_payload::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+					</munit-tools:assert>
+				</munit-tools:before-call>
+				<munit-tools:after-call >
+					<munit-tools:assert doc:name="Assert payload" doc:id="b9b09ea9-4327-41b6-85cf-82d1bfbfbf5e" message="The payload does not match">
+						<munit-tools:that ><![CDATA[#[%dw 2.0
+import jsontocsvtest::spy_assert_payload1
+---
+spy_assert_payload1::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+					</munit-tools:assert>
+				</munit-tools:after-call>
+			</munit-tools:spy>
+			<munit:set-event doc:name="Set Input" doc:id="35d11b37-e818-47e0-b0fd-4fe37dad78c3" >
+				<munit:payload value="#[readUrl('classpath://jsontocsvtest\set-event_payload.dwl')]" />
+			</munit:set-event>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to json_to_csv" doc:id="6ee8bccb-2d23-4813-96bb-a81141c7e868" name="json_to_csv"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert doc:name="Assert payload" doc:id="e595eb30-967b-4ab7-a32c-e574dd620be9" message="The payload does not match">
+				<munit-tools:that ><![CDATA[#[%dw 2.0
+import jsontocsvtest::assert_expression_payload
+---
+assert_expression_payload::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+			</munit-tools:assert>
+			<munit-tools:verify-call doc:name="Verify json to json" doc:id="6f4bb9ac-1d5e-4172-a786-7ec3fae69645" processor="ee:transform" times="1">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="75fef6a9-d2bf-488f-b940-877d93a20b5e" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+			<munit-tools:verify-call doc:name="Verify json to csv" doc:id="d360eabf-3528-4d65-a179-630c58fc070f" processor="ee:transform" times="1">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="ef3718b8-0606-4818-b320-52a43961594a" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="Error-scenario-test" doc:id="2f9dbd0b-1df2-44d1-95fe-18b5c6ac3a54" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock Write to csv file" doc:id="ec4eaaf1-eb2e-4017-82d0-49a73342723d" processor="file:write" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="0314b9ba-a743-4ece-952e-0a2c12ae5378" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="EMAIL:CONNECTIVITY" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution>
+			<try doc:name="Try" doc:id="19081220-9e8a-47f6-8b30-80c9786789c7" >
+				<flow-ref doc:name="Flow-ref to json_to_csv" doc:id="3bccadf9-1462-4c99-afbf-009eb279d069" name="json_to_csv" />
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="e3728d91-6c31-4302-ae1b-96c4c89a482c" >
+						<logger level="INFO" doc:name="Logger" doc:id="9bb79d63-32e9-43ad-8f61-19626563c76b" message="Continue...."/>
+					</on-error-continue>
+				</error-handler>
+			</try>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:verify-call doc:name="Verify Error Handler" doc:id="2050c274-1d7c-48a9-b3a1-aede49b01b2f" processor="email:send" times="1" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Send Error Email" attributeName="doc:name" />
+					<munit-tools:with-attribute whereValue="723d9cd9-8d39-40ec-a5a7-fc7d799aaf31" attributeName="doc:id" />
+					<munit-tools:with-attribute whereValue="Send Error Email" attributeName="doc:name" />
+					<munit-tools:with-attribute whereValue="723d9cd9-8d39-40ec-a5a7-fc7d799aaf31" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+		</munit:validation>
+	</munit:test>
+
+
+</mule>
